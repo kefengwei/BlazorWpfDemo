@@ -1,0 +1,47 @@
+﻿@page "/"
+@using BlazorWpfDemo
+<h3 @onmousedown="StartMove "
+    @onmouseup="EndMove" style="margin:0;">
+    Index111
+</h3>
+<Counter />
+<button @onclick="@(()=> windowManager.Minimize())">最小化</button>
+<button @onclick="@(()=> windowManager.Maximize())">最大化/还原</button>
+<button @onclick="@(()=> windowManager.Close())">关闭</button>
+<a href="https://native/https://www.baidu.com">baidu</a>
+<a href="/other">other</a>
+<img src="https://native/C:\Users\KefengWei\Pictures\wp.jpg" />
+<img src="file:///C:\Users\KefengWei\Pictures\wp.jpg" />
+
+<iframe src="https://native/C:\Users\KefengWei\Pictures\hello.html">
+</iframe>
+
+<br />
+<button @onclick="ThrowAException">Throw a Exception!!</button>
+
+@code {
+    [Inject]
+    private AppState AppState { get; set; }
+    [Inject]
+    private IWindowManager windowManager { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    private void StartMove()
+    {
+        windowManager.MouseDownDrag();
+    }
+    private void EndMove()
+    {
+        windowManager.EndMove();
+    }
+    private void ThrowAException()
+    {
+        throw new Exception("发生了一个异常！！！");
+    }
+}
+
+

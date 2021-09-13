@@ -1,0 +1,27 @@
+﻿@inherits LayoutComponentBase
+
+<ErrorBoundary @ref="errorBoundary">
+   <ChildContent>
+        @Body
+   </ChildContent>
+   <ErrorContent>
+        <p>Some Error!!!</p>
+        <button @onclick="Reload"> Click Reload!!</button>
+   </ErrorContent>
+</ErrorBoundary>
+
+@code{
+    [Inject]
+    private NavigationManager navigationManager { get; set; }
+    ErrorBoundary errorBoundary;
+
+    protected override void OnParametersSet()
+    {
+        // On each page navigation, reset any error state
+        errorBoundary?.Recover();
+    }
+    private void Reload()
+    {
+        navigationManager.NavigateTo(navigationManager.Uri, true);  
+    }
+}
