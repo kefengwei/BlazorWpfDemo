@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -51,7 +52,7 @@ namespace BlazorWpfDemo
             this.MinWidth = 1400;
             this.MinHeight = 900;
 
-            this.MaxHeight = SystemParameters.WorkArea.Height +12;
+            this.MaxHeight = SystemParameters.WorkArea.Height + 12;
             this.MaxWidth = SystemParameters.WorkArea.Width + 12;
 
             var startup = new Startup(_windowHandle);
@@ -83,6 +84,7 @@ namespace BlazorWpfDemo
             WebViewContainer.WebView.CoreWebView2.WebMessageReceived += CoreWebView2_WebMessageReceived;
             WebViewContainer.WebView.CoreWebView2.WebResourceRequested += CoreWebView2_WebResourceRequested;
             WebViewContainer.WebView.CoreWebView2.AddWebResourceRequestedFilter("*://native/*", CoreWebView2WebResourceContext.All);
+            WebViewContainer.WebView.CoreWebView2.AddWebResourceRequestedFilter("*://emmbeded/*", CoreWebView2WebResourceContext.All);
 
         }
 
@@ -96,8 +98,6 @@ namespace BlazorWpfDemo
                 var fileInfo = new FileInfo(localPath);
                 if (fileInfo.Exists)
                 {
-                    //e.Response = new NativeCoreWebView2WebResourceResponse();
-                    //e.Response =  new CoreWebView2WebResourceResponseView(fileInfo);
                     var response = new HttpResponseMessage();
 
                     e.Response = WebViewContainer.WebView.CoreWebView2.Environment.CreateWebResourceResponse(File.OpenRead(localPath), 200, "OK", $"Content-Type: {e.ResourceContext.ToString()}");
@@ -108,7 +108,17 @@ namespace BlazorWpfDemo
 
                 }
             }
-            System.Console.WriteLine(e);
+            if (uri.Host == "emmbeded")
+            {
+                var localPath = uri.LocalPath[1..];
+                var assembly = Assembly.GetEntryAssembly();
+                if (assembly != null)
+                {
+                    var stream = assembly.GetManifestResourceStream($"{assembly.GetName().Name}.{localPath.Replace("/", ".")}");
+                    var response = new HttpResponseMessage();
+                    e.Response = WebViewContainer.WebView.CoreWebView2.Environment.CreateWebResourceResponse(stream, 200, "OK", "");
+                }
+            }
         }
 
         private void CoreWebView2_WebMessageReceived(object? sender, CoreWebView2WebMessageReceivedEventArgs e)
@@ -128,14 +138,6 @@ namespace BlazorWpfDemo
                 WebViewContainer.WebView.Reload();
             }
         }
-
-        //public class NativeCoreWebView2WebResourceResponse : CoreWebView2WebResourceResponse
-        //{
-        //    public NativeCoreWebView2WebResourceResponse() : base()
-        //    {
-
-        //    }
-        //}
     }
 
 
